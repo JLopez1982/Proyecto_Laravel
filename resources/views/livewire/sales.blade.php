@@ -52,7 +52,7 @@ new class extends Component {
         $product['price']);
        //dd($cartItem->rowId);
        //actualiza el IVA para que sea el 16% de lo contrario deja el 21%
-       cart()->setTax($cartItem->rowId, 16);
+       cart()->setTax($cartItem->rowId, 0);
         // Actualiza el total del carrito
         $this->updateCartTotal();
       
