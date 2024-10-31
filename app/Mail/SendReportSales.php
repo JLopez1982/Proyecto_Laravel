@@ -21,6 +21,7 @@ class SendReportSales extends Mailable
     public function __construct($user,$sales)
     {
         //
+        //dd($sales);
         $this->user = $user;
         $this->sales= $sales;
     }

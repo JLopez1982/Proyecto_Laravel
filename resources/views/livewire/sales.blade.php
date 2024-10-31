@@ -16,10 +16,12 @@ new class extends Component {
     public $customer;
     public $search_product="";
     public $customer_id=0;
+    public $quantities;
     //
     public function mount()
     {
-        $this->products= [];        
+        $this->products= [];                
+        $this->quantities=[]; // Array para almacenar las cantidades
         //Product::all();
        //dd($this->products);           
        $this->customer=Customer::all()->find(1);
@@ -33,18 +35,57 @@ new class extends Component {
     public function addToCart($product)
     {
         // Encuentra el producto por ID
-        //dd($product['name']);
-        //$product = collect($this->products)->where('id', $productId)->first();        
+        //dd($this->quantities[$product['id']]);
+       try{ 
+       $cantidad_carrito=$this->fnc_buscar_producto_carrito($product['id']);              
+       $cantidad=$this->quantities[$product['id']];
+       $stock=$product['stock'];
+       //dd("Stock =" .  $stock  . " cantidad_carrito=" . $cantidad_carrito . "  cantidad= " .$cantidad); 
+       if($stock<$cantidad_carrito+$cantidad){
+           session()->flash('error', 'No hay stock suficiente para agregar la cantidad solicitada.');
+           return;
+       }
+
        $cartItem =cart()->add($product['id'], 
        $product['name'], 
-       1, 
+       $cantidad, 
         $product['price']);
        //dd($cartItem->rowId);
        //actualiza el IVA para que sea el 16% de lo contrario deja el 21%
        cart()->setTax($cartItem->rowId, 16);
         // Actualiza el total del carrito
         $this->updateCartTotal();
+      
+    }catch(\Exception $e){
+        //dd($e);        
+        session()->flash('error', 'Favor de proporcionar la cantidad a agregar');
+      }
+
+
     }
+
+    public function fnc_buscar_producto_carrito($productId){//fnc_buscar_producto_carrito
+    // Accede al contenido del carrito
+    $cart = cart()->content();
+
+    // Busca el producto en el carrito con el ID proporcionado
+    $itemEncontrado = $cart->search(function ($cartItem, $rowId) use ($productId) {
+        return $cartItem->id === $productId;
+    });
+
+    // Si se encuentra el producto
+    if ($itemEncontrado !== false) {
+        // Accedemos al producto en el carrito
+        $cartItem = $cart->get($itemEncontrado);
+
+        // Retorna la cantidad agregada al carrito
+        return $cartItem->qty;
+    } else {
+        // Si no se encuentra el producto en el carrito
+        return 0;
+    }
+
+    }//fnc_buscar_producto_carrito
 
     public function removeFromCart($rowId)
     {
@@ -72,7 +113,7 @@ new class extends Component {
             ];
          })->values();
          //dd( $items);
-        $this->cartItems=$items;
+        $this->cartItems=$items;        
         //dd($this->cartItems);
     }
 
@@ -97,6 +138,7 @@ new class extends Component {
                             ->where('activo', 1) // Condición para productos activos
                             ->get();
     $this->reset(['search_product']);
+    $this->quantities=[]; // Array para almacenar las cantidades
     //dd($this->products);
    }
 
@@ -211,11 +253,13 @@ new class extends Component {
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Precio</th>
-                            <th scope="col">Stock</th>
-                            <th scope="col">Acciones</th>
+                            <th class="w-10">#</th>
+                            <th class="w-20">Nombre</th>
+                            <th class="w-30">Descripción</th>
+                            <th class="w-10">Precio</th>
+                            <th class="w-10">Stock</th>
+                            <th class="w-10">Cantidad</th>
+                            <th class="w-10">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -223,8 +267,14 @@ new class extends Component {
                         <tr>
                             <th scope="row">{{ $product->id }}</th>
                             <td>{{ $product->name }}</td>
+                            <td>{{ $product->description }}</td>
                             <td>${{ number_format($product->price, 2) }}</td>
                             <td>{{ number_format($product->stock, 0) }}</td>
+                            <td>
+                                <!-- Input para capturar la cantidad -->
+                                <input type="number" wire:model="quantities.{{ $product['id'] }}" min="1" class="form-control form-control-sm" 
+                                       placeholder="Cantidad" value="1" size="2" style="width: 100px;">
+                            </td>
                             <td>
                                 <button class="btn btn-sm btn-success" wire:click="addToCart({{ $product }})">Agregar</button>
                             </td>

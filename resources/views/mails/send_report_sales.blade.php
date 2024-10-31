@@ -6,9 +6,10 @@
       
           <table style="border-collapse: collapse;width: 100%;">
             <thead>
-              <tr style="background-color: #D6EEEE;">
-                <th style="  text-align: left;padding: 8px;">id</th>
+              <tr style="background-color: #D6EEEE;">                
                 <th style="  text-align: left;padding: 8px;">Fecha</th>
+                <th style="  text-align: left;padding: 8px;">Impuestos</th>
+                <th style="  text-align: left;padding: 8px;">Subtotal</th>
                 <th style="  text-align: left;padding: 8px;">Total</th>
                 <th style="  text-align: left;padding: 8px;">Usuario</th>
               </tr>
@@ -16,11 +17,12 @@
             <tbody>              
                 @foreach($sales as $sale)
                   <tr >
-                    <td style="  text-align: left;padding: 8px;">{{ $sale->id }}</td>
-                    <td style="  text-align: left;padding: 8px;">{{ $sale->created_at }}</td>
-                    <td style="  text-align: left;padding: 8px;"> $ {{ $sale->getTotal() }}</td>
+                    <td style="  text-align: left;padding: 8px;">{{ $sale->fecha }}</td>
+                    <td style="  text-align: left;padding: 8px;">{{ $sale->impuesto }}</td>
+                    <td style="  text-align: left;padding: 8px;"> $ {{ $sale->subtotal }}</td>
+                    <td style="  text-align: left;padding: 8px;"> $ {{ $sale->total }}</td>
                     <td style="  text-align: left;padding: 8px;">      
-                         {{ $sale->user->name }}
+                         {{ $sale->name }}
                     </td>
                   </tr>
                 @endforeach
